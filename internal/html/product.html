@@ -1,0 +1,25 @@
+{{define "title"}}
+ - Editar producto
+{{end}}
+{{define "content"}}
+<a href="/">Atrás</a>
+{{if .}}
+<form action="/product/edit" method="post">
+    <input type="hidden" id="id" name="id" value="{{.Id}}">
+    <label for="name">Me falta...</label><br>
+    <input type="text" id="name" name="name" value="{{.Name}}" required><br>
+    <label for="description">Más detalles</label><br>
+    <input type="text" id="description" name="description" value="{{.Description}}" placeholder="Descripción"><br>
+    <label for="quantity">Cantidad</label><br>
+    <input type="text" id="quantity" name="quantity" value="{{.Quantity}}" placeholder="Cantidad"><br>
+    <input type="submit" value="Actualizar">
+</form>
+<h1>{{.Name}}</h1>
+<form action="/product/delete" method="post">
+    <input type="hidden" id="id" name="id" value="{{.Id}}">
+    <input type="submit" value="Borrar">
+</form>
+{{else}}
+<h1>Este producto no existe</h1>
+{{end}}
+{{end}}

@@ -1,0 +1,9 @@
+{{define "title"}}
+ - Iniciar sesión
+{{end}}
+{{define "content"}}
+<form action="/login" method="post">
+    <input type="text" id="password" name="password" placeholder="Contraseña">
+    <input type="submit" value="Iniciar sessión">
+</form>
+{{end}}
