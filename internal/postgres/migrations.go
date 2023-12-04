@@ -3,7 +3,6 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 )
 
@@ -40,7 +39,9 @@ func Migrate(db *sql.DB) error {
 	var currentVersion int
 	err := db.QueryRow(`SELECT version FROM schema_version`).Scan(&currentVersion)
 	if err != nil {
-		log.Fatalf("error retrieving schema version for the migrations: %v", err)
+		// Ignore the error and try to apply all migrations
+		// It could be that the database is not initialized
+		currentVersion = 0
 	}
 
 	for version := currentVersion; version < schemaVersion; version++ {
