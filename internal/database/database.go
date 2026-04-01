@@ -1,4 +1,4 @@
-package postgres
+package database
 
 import (
 	"crypto/rand"
@@ -11,10 +11,10 @@ import (
 	"time"
 
 	quemefalta "github.com/dcasado/que-me-falta"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-// SessionService represents a PostgreSQL implementation of quemefalta.SessionService.
+// SessionService represents a SQL implementation of quemefalta.SessionService.
 type SessionService struct {
 	DB                   *sql.DB
 	MaxSessionAgeSeconds int
@@ -25,7 +25,7 @@ type ProductService struct {
 }
 
 func Open(uri string) (*sql.DB, error) {
-	db, err := sql.Open("pgx", uri)
+	db, err := sql.Open("sqlite3", uri)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
@@ -166,8 +166,8 @@ func (p *ProductService) EditProduct(id string, name string, description string,
 }
 
 // DeleteProduct deletes a product with a given id.
-func (s *ProductService) DeleteProduct(id string) error {
-	_, err := s.DB.Exec(`DELETE FROM products WHERE id = $1`, id)
+func (p *ProductService) DeleteProduct(id string) error {
+	_, err := p.DB.Exec(`DELETE FROM products WHERE id = $1`, id)
 	if err != nil {
 		return fmt.Errorf("deleteProduct: %v", err)
 	}

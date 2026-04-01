@@ -1,4 +1,4 @@
-package postgres
+package database
 
 import (
 	"database/sql"
@@ -20,10 +20,8 @@ var migrations = []func(tx *sql.Tx) error{
 				expiration_timestamp TIMESTAMP NOT NULL
 			);
 
-			CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 			CREATE TABLE products (
-				id          uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+				id          INTEGER PRIMARY KEY,
 				name        VARCHAR(255) NOT NULL,
 				description VARCHAR(255),
 				quantity    VARCHAR(255),

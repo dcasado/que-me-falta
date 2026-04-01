@@ -9,12 +9,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dcasado/que-me-falta/internal/database"
 	"github.com/dcasado/que-me-falta/internal/http"
-	"github.com/dcasado/que-me-falta/internal/postgres"
 )
 
 const (
-	postgresURIVariable          string = "POSTGRES_URI"
+	databaseURIVariable          string = "DATABASE_URI"
 	signingKeyVariable           string = "SIGNING_KEY"
 	passwordSHA256Variable       string = "PASSWORD_SHA256"
 	maxSessionAgeSecondsVariable string = "MAX_SESSION_AGE_SECONDS"
@@ -23,17 +23,17 @@ const (
 )
 
 func main() {
-	postgresURI, present := os.LookupEnv(postgresURIVariable)
+	databaseURI, present := os.LookupEnv(databaseURIVariable)
 	if !present {
-		log.Fatalf("%s is required", postgresURIVariable)
+		log.Fatalf("%s is required", databaseURIVariable)
 	}
 
 	// Connect to database.
-	db, err := postgres.Open(postgresURI)
+	db, err := database.Open(databaseURI)
 	if err != nil {
-		log.Fatalf("error connecting to postgres: %v", err)
+		log.Fatalf("error connecting to database: %v", err)
 	}
-	err = postgres.Migrate(db)
+	err = database.Migrate(db)
 	if err != nil {
 		log.Fatalf("error during migration %v", err)
 	}
@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not parse %s: %v", maxSessionAgeSecondsVariable, err)
 	}
-	ss := &postgres.SessionService{
+	ss := &database.SessionService{
 		DB:                   db,
 		MaxSessionAgeSeconds: maxSessionAgeSeconds,
 	}
@@ -66,7 +66,7 @@ func main() {
 		SessionService:       ss,
 	}
 
-	ps := &postgres.ProductService{
+	ps := &database.ProductService{
 		DB: db,
 	}
 
