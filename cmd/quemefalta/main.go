@@ -15,7 +15,7 @@ import (
 
 const (
 	postgresURIVariable          string = "POSTGRES_URI"
-	SigningKeyVariable           string = "SIGNING_KEY"
+	signingKeyVariable           string = "SIGNING_KEY"
 	passwordSHA256Variable       string = "PASSWORD_SHA256"
 	maxSessionAgeSecondsVariable string = "MAX_SESSION_AGE_SECONDS"
 	listenAddressVariable        string = "LISTEN_ADDRESS"
@@ -51,9 +51,9 @@ func main() {
 		MaxSessionAgeSeconds: maxSessionAgeSeconds,
 	}
 
-	signingKey, present := os.LookupEnv(SigningKeyVariable)
+	signingKey, present := os.LookupEnv(signingKeyVariable)
 	if !present {
-		log.Fatalf("%s is required", SigningKeyVariable)
+		log.Fatalf("%s is required", signingKeyVariable)
 	}
 	passwordSHA256, present := os.LookupEnv(passwordSHA256Variable)
 	if !present {
