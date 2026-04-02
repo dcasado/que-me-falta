@@ -3,21 +3,13 @@ package quemefalta
 import "time"
 
 type Product struct {
-	ID          string
-	Name        string
-	Description string
-	Quantity    string
-	Added       bool
+	ID   string
+	Name string
 }
 
 type ProductService interface {
-	CreateProduct(name string, description string, quantity string) error
-	AddedProducts() ([]*Product, error)
-	RemainingProducts() ([]*Product, error)
-	AddProduct(id string) error
-	RemoveProduct(id string) error
-	Product(id string) (*Product, error)
-	EditProduct(id string, name string, description string, quantity string) error
+	CreateProduct(name string) error
+	Products() ([]*Product, error)
 	DeleteProduct(id string) error
 }
 

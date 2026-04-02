@@ -37,10 +37,6 @@ func Serve(listenAddress, listenPort string, sessionHandler SessionHandler, prod
 	serveMux.Handle("/favicon.ico", resources)
 	serveMux.HandleFunc("/", sessionHandler.Auth(productsHandler.Index))
 	serveMux.HandleFunc("/product", sessionHandler.Auth(productsHandler.Product))
-	serveMux.HandleFunc("/product/", sessionHandler.Auth(productsHandler.Product))
-	serveMux.HandleFunc("/product/edit", sessionHandler.Auth(productsHandler.EditProduct))
-	serveMux.HandleFunc("/product/add", sessionHandler.Auth(productsHandler.AddProduct))
-	serveMux.HandleFunc("/product/remove", sessionHandler.Auth(productsHandler.RemoveProduct))
 	serveMux.HandleFunc("/product/delete", sessionHandler.Auth(productsHandler.DeleteProduct))
 	serveMux.HandleFunc("/login", sessionHandler.Login)
 	serveMux.HandleFunc("/logout", sessionHandler.Auth(sessionHandler.Logout))
@@ -212,78 +208,18 @@ func (h *SessionHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductsHandler) Index(w http.ResponseWriter, r *http.Request) {
-	addedProducts, err := h.ProductService.AddedProducts()
+	products, err := h.ProductService.Products()
 	if err != nil {
-		log.Printf("error retrieving added products: %v", err)
+		log.Printf("error retrieving products: %v", err)
 	}
-	remainingProducts, err := h.ProductService.RemainingProducts()
-	if err != nil {
-		log.Printf("error retrieving remaining products: %v", err)
-	}
-	err = html.Index(w, addedProducts, remainingProducts)
+	err = html.Index(w, products)
 	if err != nil {
 		log.Printf("error serving index: %v", err)
 	}
 }
 
-func (h *ProductsHandler) AddProduct(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		err := r.ParseForm()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		formId := r.FormValue("id")
-
-		err = h.ProductService.AddProduct(formId)
-		if err != nil {
-			log.Printf("error adding a product: %v", err)
-		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-}
-
-func (h *ProductsHandler) RemoveProduct(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		err := r.ParseForm()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		formId := r.FormValue("id")
-
-		err = h.ProductService.RemoveProduct(formId)
-		if err != nil {
-			log.Printf("error removing a product: %v", err)
-		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-}
-
 func (h *ProductsHandler) Product(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case http.MethodGet:
-		id := strings.TrimPrefix(r.URL.Path, "/product/")
-		product, err := h.ProductService.Product(id)
-		if err != nil {
-			err = html.Product(w, nil)
-			if err != nil {
-				log.Printf("error serving product: %v", err)
-			}
-			return
-		}
-		err = html.Product(w, product)
-		if err != nil {
-			log.Printf("error serving product: %v", err)
-		}
 	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
@@ -291,36 +227,10 @@ func (h *ProductsHandler) Product(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		formName := r.FormValue("name")
-		formDescription := r.FormValue("description")
-		formQuantity := r.FormValue("quantity")
 
-		err = h.ProductService.CreateProduct(formName, formDescription, formQuantity)
+		err = h.ProductService.CreateProduct(formName)
 		if err != nil {
 			log.Printf("error creating a product: %v", err)
-		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-}
-
-func (h *ProductsHandler) EditProduct(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		err := r.ParseForm()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		formId := r.FormValue("id")
-		formName := r.FormValue("name")
-		formDescription := r.FormValue("description")
-		formQuantity := r.FormValue("quantity")
-
-		err = h.ProductService.EditProduct(formId, formName, formDescription, formQuantity)
-		if err != nil {
-			log.Printf("error editing a product: %v", err)
 		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	default:
@@ -337,9 +247,9 @@ func (h *ProductsHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) 
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		formId := r.FormValue("id")
+		formID := r.FormValue("id")
 
-		err = h.ProductService.DeleteProduct(formId)
+		err = h.ProductService.DeleteProduct(formID)
 		if err != nil {
 			log.Printf("error deleting a product: %v", err)
 		}

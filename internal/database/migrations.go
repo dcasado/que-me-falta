@@ -22,10 +22,7 @@ var migrations = []func(tx *sql.Tx) error{
 
 			CREATE TABLE products (
 				id          INTEGER PRIMARY KEY,
-				name        VARCHAR(255) NOT NULL,
-				description VARCHAR(255),
-				quantity    VARCHAR(255),
-				added       BOOLEAN NOT NULL DEFAULT true
+				name        VARCHAR(255) NOT NULL
 			);
 		`
 		_, err = tx.Exec(sql)

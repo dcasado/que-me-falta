@@ -4,56 +4,18 @@
 </form> -->
 <div>
     <form action="/product" method="post" class="create-form">
-        <input type="text" id="name" name="name" required placeholder="¿Que te falta?">
-        <input type="text" id="description" name="description" placeholder="¿Algún otro detalle?">
-        <input type="text" id="quantity" name="quantity" placeholder="¿Que cantidad?">
+        <input type="text" id="name" name="name" required autocapitalize="sentences" placeholder="¿Que te falta?">
         <input type="submit" value="Añadir" class="button">
     </form>
 </div>
 <h1>Me falta...</h1>
-<div class="grid added">
-    {{range .AddedProducts}}
-    <div class="item" onclick="document.getElementById('form-{{.Id}}-added').submit();">
-        <form id="form-{{.Id}}-added" method="post" action="/product/remove">
-            <input type="hidden" name="id" value="{{.Id}}">
-            <div class="item-content">
-                <a href="/product/{{.Id}}">Editar</a>
-                <h3>{{.Name}}</h3>
-                {{if ne .Description ""}}
-                <p>{{.Description}}</p>
-                {{ else }}
-                <p></p>
-                {{ end }}
-                {{if .Quantity}}
-                <p>{{.Quantity}}</p>
-                {{else}}
-                <p></p>
-                {{end}}
-            </div>
-        </form>
-    </div>
-    {{end}}
-</div>
-<hr class="solid">
-<div class="grid all">
-    {{range .RemainingProducts}}
-    <div class="item" onclick="document.getElementById('form-{{.Id}}-remaining').submit();">
-        <form id="form-{{.Id}}-remaining" method="post" action="/product/add">
-            <input type="hidden" name="id" value="{{.Id}}">
-            <div class="item-content">
-                <a href="/product/{{.Id}}">Editar</a>
-                <h3>{{.Name}}</h3>
-                {{if ne .Description ""}}
-                <p>{{.Description}}</p>
-                {{ else }}
-                <p></p>
-                {{ end }}
-                {{if .Quantity}}
-                <p>{{.Quantity}}</p>
-                {{else}}
-                <p></p>
-                {{end}}
-            </div>
+<div class="products">
+    {{range .Products}}
+    <div class="item">
+        <p>{{.Name}}</p>
+        <form id="form-{{.ID}}" method="post" action="/product/delete">
+            <input type="hidden" name="id" value="{{.ID}}">
+            <input type="submit" value="&#10003" class="button">
         </form>
     </div>
     {{end}}
