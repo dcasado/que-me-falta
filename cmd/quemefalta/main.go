@@ -101,7 +101,9 @@ func main() {
 			stop()
 			cancel()
 			close(errC)
-			db.Close()
+			if err := db.Close(); err != nil {
+				log.Fatalf("error closing database: %v", err)
+			}
 		}()
 
 		server.SetKeepAlivesEnabled(false)
