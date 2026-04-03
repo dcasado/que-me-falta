@@ -33,9 +33,9 @@ jobs:
             ghcr.io/dcasado/que-me-falta
           # generate Docker tags based on the following events/attributes
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern={{version}}-${{ matrix.file-suffix }}
+            type=semver,pattern={{major}}.{{minor}}-${{ matrix.file-suffix }}
+            type=semver,pattern={{major}}-${{ matrix.file-suffix }}
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -48,45 +48,15 @@ jobs:
         with:
           context: .
           platforms: ${{ matrix.arch }}
-          push: false
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=docker,dest=${{ runner.temp }}/que-me-falta-${{ matrix.file-suffix }}.tar
-
-      - name: Upload artifact
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v4
-        with:
-          name: que-me-falta-${{ matrix.file-suffix }}
-          path: ${{ runner.temp }}/que-me-falta-${{ matrix.file-suffix }}.tar
 
   push-images:
     needs: [build-image]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
     steps:
-      - name: Download amd64 image
-        uses: actions/download-artifact@v4
-        with:
-          name: que-me-falta-amd64
-          path: ${{ runner.temp }}
-
-      - name: Load image
-        run: |
-          docker load --input ${{ runner.temp }}/que-me-falta-amd64.tar
-          docker image ls -a
-
-      - name: Download arm64 image
-        uses: actions/download-artifact@v4
-        with:
-          name: que-me-falta-arm64
-          path: ${{ runner.temp }}
-
-      - name: Load image
-        run: |
-          docker load --input ${{ runner.temp }}/que-me-falta-arm64.tar
-          docker image ls -a
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -101,6 +71,18 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
 
+      - name: Create manifest
+        run: |
+          docker manifest create ghcr.io/dcasado/que-me-falta:latest ghcr.io/dcasado/que-me-falta:latest-amd64 ghcr.io/dcasado/que-me-falta:latest-arm64
+          docker manifest create ghcr.io/dcasado/que-me-falta:{{version}} ghcr.io/dcasado/que-me-falta:{{version}}-amd64 ghcr.io/dcasado/que-me-falta:{{version}}-arm64
+          docker manifest create ghcr.io/dcasado/que-me-falta:{{major}}.{{minor}} ghcr.io/dcasado/que-me-falta:{{major}}.{{minor}}-amd64 ghcr.io/dcasado/que-me-falta:{{major}}.{{minor}}-arm64
+          docker manifest create ghcr.io/dcasado/que-me-falta:{{major}} ghcr.io/dcasado/que-me-falta:{{major}}-amd64 ghcr.io/dcasado/que-me-falta:{{major}}-arm64
+          
+          docker manifest create docker.io/davidcasado/que-me-falta:latest docker.io/davidcasado/que-me-falta:latest-amd64 docker.io/davidcasado/que-me-falta:latest-arm64
+          docker manifest create docker.io/davidcasado/que-me-falta:{{version}} docker.io/davidcasado/que-me-falta:{{version}}-amd64 docker.io/davidcasado/que-me-falta:{{version}}-arm64
+          docker manifest create docker.io/davidcasado/que-me-falta:{{major}}.{{minor}} docker.io/davidcasado/que-me-falta:{{major}}.{{minor}}-amd64 docker.io/davidcasado/que-me-falta:{{major}}.{{minor}}-arm64
+          docker manifest create docker.io/davidcasado/que-me-falta:{{major}} docker.io/davidcasado/que-me-falta:{{major}}-amd64 docker.io/davidcasado/que-me-falta:{{major}}-arm64
+
       - name: Login to Github Container Registry
         uses: docker/login-action@v3
         with:
@@ -114,9 +96,15 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push Docker images
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}      
+      - name: Create manifest
+        run: |
+          docker manifest push ghcr.io/dcasado/que-me-falta:latest
+          docker manifest push ghcr.io/dcasado/que-me-falta:{{version}}
+          docker manifest push ghcr.io/dcasado/que-me-falta:{{major}}.{{minor}}
+          docker manifest push ghcr.io/dcasado/que-me-falta:{{major}}
+          
+          docker manifest push docker.io/davidcasado/que-me-falta:latest
+          docker manifest push docker.io/davidcasado/que-me-falta:{{version}}
+          docker manifest push docker.io/davidcasado/que-me-falta:{{major}}.{{minor}}
+          docker manifest push docker.io/davidcasado/que-me-falta:{{major}}
+
