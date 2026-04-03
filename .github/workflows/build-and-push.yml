@@ -14,8 +14,10 @@ jobs:
         include:
           - os: ubuntu-24.04
             arch: linux/amd64
+            file-suffix: amd64
           - os: ubuntu-24.04-arm
             arch: linux/arm64
+            file-suffix: arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -72,6 +74,61 @@ jobs:
         with:
           context: .
           platforms: ${{ matrix.arch }}
-          push: true
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=docker,dest=${{ runner.temp }}/que-me-falta.tar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: que-me-falta-${{ matrix.file-suffix }}
+          path: ${{ runner.temp }}/que-me-falta-${{ matrix.file-suffix }}.tar
+
+  push-images:
+    needs: [build-and-push]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download amd64 image
+        uses: actions/download-artifact@v4
+        with:
+          name: que-me-falta-amd64
+          path: ${{ runner.temp }}
+
+      - name: Load image
+        run: |
+          docker load --input ${{ runner.temp }}/que-me-falta-amd64.tar
+          docker image ls -a
+
+      - name: Download arm64 image
+        uses: actions/download-artifact@v4
+        with:
+          name: que-me-falta-arm64
+          path: ${{ runner.temp }}
+
+      - name: Load image
+        run: |
+          docker load --input ${{ runner.temp }}/que-me-falta-arm64.tar
+          docker image ls -a
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            docker.io/davidcasado/que-me-falta
+            ghcr.io/dcasado/que-me-falta
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Push Docker images
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}      
