@@ -8,7 +8,7 @@ on:
       - '*'
 
 jobs:
-  build-and-push:
+  build-image:
     strategy:
       matrix:
         include:
@@ -61,7 +61,7 @@ jobs:
           path: ${{ runner.temp }}/que-me-falta-${{ matrix.file-suffix }}.tar
 
   push-images:
-    needs: [build-and-push]
+    needs: [build-image]
     runs-on: ubuntu-24.04
     steps:
       - name: Download amd64 image
