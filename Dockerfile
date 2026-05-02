@@ -1,4 +1,4 @@
-FROM golang:1.21.4-alpine3.17 AS builder
+FROM golang:1.21.5-alpine3.17 AS builder
 
 # Install build packages
 RUN apk add --no-cache \
