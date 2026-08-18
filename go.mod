@@ -2,4 +2,4 @@ module github.com/dcasado/que-me-falta
 
 go 1.21.4
 
-require github.com/mattn/go-sqlite3 v1.14.49
+require github.com/mattn/go-sqlite3 v1.14.50
